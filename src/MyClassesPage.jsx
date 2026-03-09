@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-
-// Update UNIVERSITY_WEEK1_START to the Monday that corresponds
-// to your university's Week 1 for the current teaching period.
-const UNIVERSITY_WEEK1_START = new Date(2026, 2, 2); // 2 March 2026 (Monday)
+import { UNIVERSITY_WEEK1_START } from './data';
 
 function MyClassesPage({ classes }) {
   const [selectedId, setSelectedId] = useState(classes[0]?.id ?? '');

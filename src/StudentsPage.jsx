@@ -1,31 +1,5 @@
 import { useMemo, useState } from 'react';
-
-const INITIAL_STUDENTS = [
-  {
-    id: '8469532',
-    email: 'aaj296@uowmail.edu.au',
-    name: 'Adel Al JASRY',
-    weeks: { 1: 'present' },
-  },
-  {
-    id: '9783210',
-    email: 'pvs576@uowmail.edu.au',
-    name: 'Puvennesan SANDRANESAN',
-    weeks: { 1: 'present' },
-  },
-  {
-    id: '8070799',
-    email: 'aba456@uowmail.edu.au',
-    name: 'Alyan Babar ALAM',
-    weeks: { 1: 'absent' },
-  },
-  {
-    id: '8123456',
-    email: 'xyz123@uowmail.edu.au',
-    name: 'Student FOUR',
-    weeks: { 1: 'present' },
-  },
-];
+import { INITIAL_STUDENTS } from './data';
 
 function StudentsPage() {
   const [students, setStudents] = useState(INITIAL_STUDENTS);
