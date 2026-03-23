@@ -1,13 +1,16 @@
 import { useState } from 'react';
 
 function SupportPage() {
+  // Switches between the "FAQs" view and "Contact Support" view.
   const [view, setView] = useState('contact'); // 'faqs' | 'contact'
 
+  // Prevent page jump from anchor click, then show FAQs panel.
   const showFaqs = (e) => {
     e.preventDefault();
     setView('faqs');
   };
 
+  // Prevent page jump from anchor click, then show contact cards.
   const showContact = (e) => {
     e.preventDefault();
     setView('contact');
@@ -46,6 +49,7 @@ function SupportPage() {
 
       {view === 'contact' ? (
         <section className="support-body">
+          {/* Reusable contact card for each support team. */}
           <SupportCard
             title="SYSTEM ADMINISTRATION CONTACTS"
             description="For general enquiries, account, or class-related concerns:"
@@ -95,6 +99,7 @@ function SupportCard({ title, description, phone, email, address }) {
 }
 
 function FaqSection() {
+  // Static FAQ content for common user questions.
   return (
     <section className="faq-body">
       <h3 className="faq-title">FAQs (Frequently Asked Questions)</h3>

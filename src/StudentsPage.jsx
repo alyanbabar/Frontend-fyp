@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react';
-import { INITIAL_STUDENTS } from './data';
 
-function StudentsPage() {
-  const [students, setStudents] = useState(INITIAL_STUDENTS);
+function StudentsPage({ students, onSetStatus }) {
+  // "filters" reflects what user is typing/selecting in the form inputs.
   const [filters, setFilters] = useState({
     studentId: '',
     name: '',
     week: '',
   });
+  // "appliedFilters" only changes when user clicks Apply.
+  // This prevents filtering on every keystroke.
   const [appliedFilters, setAppliedFilters] = useState(filters);
 
+  // Default week is Week 1 when no week is selected.
   const activeWeek = appliedFilters.week ? Number(appliedFilters.week) : 1;
 
+  // Build filtered rows from currently applied filters.
   const filteredStudents = useMemo(() => {
     const idFilter = appliedFilters.studentId;
     const nameFilter = appliedFilters.name.trim().toLowerCase();
@@ -27,25 +30,23 @@ function StudentsPage() {
     });
   }, [students, appliedFilters]);
 
+  // Returns an input handler for one filter field.
   const handleFilterChange = (field) => (event) => {
     const value = event.target.value;
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Apply current form inputs to the table.
   const handleApplyFilters = (event) => {
     event.preventDefault();
     setAppliedFilters(filters);
   };
 
+  // Sends attendance update request through App -> attendanceApi service.
+  // Backend team will replace mock mode with real DB persistence.
   const handleSetStatus = (studentId, status) => {
     const week = activeWeek || 1;
-    setStudents((prev) =>
-      prev.map((student) => {
-        if (student.id !== studentId) return student;
-        const weeks = { ...(student.weeks || {}), [week]: status };
-        return { ...student, weeks };
-      }),
-    );
+    onSetStatus(studentId, week, status);
   };
 
   return (
@@ -53,7 +54,7 @@ function StudentsPage() {
       <section className="students-header">
         <h2 className="students-title">Students</h2>
         <p className="students-subtitle">
-          CSIT123 Spring 2025 | MON 8:30 AM - 10:30 AM
+          Manage attendance status by week. Changes are reflected in Analytics.
         </p>
       </section>
 
@@ -133,6 +134,7 @@ function StudentsPage() {
         </div>
 
         {filteredStudents.map((student, index) => {
+          // If this week has no explicit value yet, treat it as present.
           const weeks = student.weeks || {};
           const status = weeks[activeWeek] || 'present';
           const isPresent = status === 'present';

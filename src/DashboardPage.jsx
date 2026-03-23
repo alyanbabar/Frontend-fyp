@@ -2,13 +2,16 @@ import { useMemo, useState } from 'react';
 
 function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
   const today = new Date();
+  // Year/month are tracked separately so the calendar can move across years.
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth()); // 0-11
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
 
+  // useMemo avoids rebuilding calendar cells unless month/year changes.
   const calendar = useMemo(() => buildCalendar(year, month, today), [year, month]);
 
+  // Only classes assigned to this teacher affect dashboard metrics.
   const assignedClasses = classes.filter((cls) => cls.assigned);
   const activeClasses = assignedClasses.length;
   const totalStudents = assignedClasses.reduce(
@@ -22,6 +25,7 @@ function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
   const todayAttendancePct =
     totalStudents > 0 ? Math.round((studentsPresent / totalStudents) * 100) : 0;
 
+  // Move back one month; if January, wrap to previous year's December.
   const handlePrevMonth = () => {
     setMonth((prev) => {
       if (prev === 0) {
@@ -32,6 +36,7 @@ function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
     });
   };
 
+  // Move forward one month; if December, wrap to next year's January.
   const handleNextMonth = () => {
     setMonth((prev) => {
       if (prev === 11) {
@@ -173,6 +178,7 @@ function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
       </main>
 
       {showAddModal && (
+        // Clicking the dark backdrop closes the modal.
         <div className="modal-backdrop" onClick={handleCloseModal}>
           <div
             className="add-class-modal"
@@ -239,6 +245,7 @@ function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
       )}
 
       {showRemoveModal && (
+        // Remove modal reuses the same layout with a different action button.
         <div className="modal-backdrop" onClick={handleCloseRemoveModal}>
           <div
             className="add-class-modal remove-class-modal"
@@ -302,13 +309,14 @@ function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
 }
 
 function buildCalendar(year, month, today) {
+  // Human-friendly month label (for example: "March").
   const monthName = new Intl.DateTimeFormat('en', { month: 'long' }).format(
     new Date(year, month, 1),
   );
 
   const weekdays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
-  const firstDay = new Date(year, month, 1);
+  const firstDay = new Date(year, month, 1); // First date of selected month.
   const jsWeekday = firstDay.getDay(); // 0 (Sun) - 6 (Sat)
   const mondayIndex = (jsWeekday + 6) % 7; // 0 (Mon) - 6 (Sun)
 
@@ -317,10 +325,12 @@ function buildCalendar(year, month, today) {
   const cells = [];
   let keyCounter = 0;
 
+  // Add leading empty cells so day "1" starts under the correct weekday.
   for (let i = 0; i < mondayIndex; i += 1) {
     cells.push({ key: `blank-${keyCounter++}`, day: null, isToday: false });
   }
 
+  // Add one cell for each day in the selected month.
   for (let day = 1; day <= daysInMonth; day += 1) {
     const isToday =
       day === today.getDate() &&

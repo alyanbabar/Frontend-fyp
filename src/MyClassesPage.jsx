@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { UNIVERSITY_WEEK1_START } from './data';
 
 function MyClassesPage({ classes }) {
+  // Track which class is selected in the dropdown.
   const [selectedId, setSelectedId] = useState(classes[0]?.id ?? '');
 
   useEffect(() => {
+    // Keep selected class valid when class list changes.
+    // Example: if selected class was removed, fallback to the first available class.
     if (!classes.length) {
       setSelectedId('');
       return;
@@ -38,6 +41,7 @@ function MyClassesPage({ classes }) {
   const absentPct = 100 - presentPct;
 
   const computeTeachingWeek = () => {
+    // Convert milliseconds into whole teaching weeks since Week 1 start date.
     const today = new Date();
     const weekMs = 7 * 24 * 60 * 60 * 1000;
     const diffMs = today - UNIVERSITY_WEEK1_START;
@@ -143,6 +147,7 @@ function MyClassesPage({ classes }) {
               </div>
             </div>
             <div className="classes-pie-wrapper">
+              {/* Conic gradient simulates a pie chart using two attendance percentages. */}
               <div
                 className="classes-pie"
                 style={{
