@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { getAvailableWeeks } from './data';
 
 function StudentsPage({ students, onSetStatus }) {
   // "filters" reflects what user is typing/selecting in the form inputs.
@@ -11,8 +12,11 @@ function StudentsPage({ students, onSetStatus }) {
   // This prevents filtering on every keystroke.
   const [appliedFilters, setAppliedFilters] = useState(filters);
 
-  // Default week is Week 1 when no week is selected.
-  const activeWeek = appliedFilters.week ? Number(appliedFilters.week) : 1;
+  const availableWeeks = useMemo(() => getAvailableWeeks(students), [students]);
+  const defaultWeek = availableWeeks[0] ?? 1;
+
+  // Default week is the first available week from attendance data.
+  const activeWeek = appliedFilters.week ? Number(appliedFilters.week) : defaultWeek;
 
   // Build filtered rows from currently applied filters.
   const filteredStudents = useMemo(() => {
@@ -103,9 +107,8 @@ function StudentsPage({ students, onSetStatus }) {
               value={filters.week}
               onChange={handleFilterChange('week')}
             >
-              <option value="">Week 1</option>
-              {Array.from({ length: 13 }).map((_, index) => {
-                const weekNumber = index + 1;
+              <option value="">{`Week ${defaultWeek}`}</option>
+              {availableWeeks.map((weekNumber) => {
                 return (
                   <option key={weekNumber} value={weekNumber}>
                     Week {weekNumber}

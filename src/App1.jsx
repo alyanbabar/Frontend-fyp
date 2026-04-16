@@ -4,7 +4,12 @@ import SupportPage from './SupportPage';
 import MyClassesPage from './MyClassesPage';
 import StudentsPage from './StudentsPage';
 import AnalyticsPage from './AnalyticsPage';
+import ProfilePage from './ProfilePage';
+import LoginPage from './LoginPage';
+import RegisterPage from './RegisterPage';
 import { INITIAL_STUDENTS } from './data';
+import { CURRENT_TUTOR } from './data';
+import { AUTH_CREDENTIALS } from './data';
 import { updateStudentAttendance } from './services/attendanceApi';
 
 // Seed data used to populate the dashboard and class screens on first load.
@@ -57,11 +62,17 @@ const INITIAL_CLASSES = [
 
 function App() {
   // `page` decides which main screen is shown in the content area.
-  const [page, setPage] = useState('dashboard'); // 'dashboard' | 'classes' | 'support' | 'students' | 'analytics'
+  const [page, setPage] = useState('dashboard'); // 'dashboard' | 'classes' | 'support' | 'students' | 'analytics' | 'profile'
   // `classes` is shared state so child pages stay in sync when classes are added/removed.
   const [classes, setClasses] = useState(INITIAL_CLASSES);
   // Shared student state powers both Students and Analytics pages.
   const [students, setStudents] = useState(INITIAL_STUDENTS);
+  // Tutor state is kept in App so all pages (and top bar) stay in sync.
+  const [tutor, setTutor] = useState(CURRENT_TUTOR);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(CURRENT_TUTOR.photoUrl);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [authCredentials, setAuthCredentials] = useState(AUTH_CREDENTIALS);
 
   // Helper to update UI state after a successful backend update.
   const applyLocalAttendanceStatus = (studentId, week, status) => {
@@ -113,6 +124,69 @@ function App() {
     }
   };
 
+  // Photo update flow for frontend prototype.
+  // Later this can call backend upload API and persist returned URL in DB.
+  const handleProfilePhotoChange = (newPhotoUrl) => {
+    setProfilePhotoUrl(newPhotoUrl);
+    setTutor((prev) => ({ ...prev, photoUrl: newPhotoUrl }));
+  };
+
+  // Temporary frontend auth logic.
+  // Backend team can replace this with API token/session verification.
+  const handleLogin = ({ email, password }) => {
+    if (
+      email.toLowerCase() === authCredentials.email.toLowerCase() &&
+      password === authCredentials.password
+    ) {
+      setIsAuthenticated(true);
+      return { ok: true };
+    }
+    return { ok: false, message: 'Incorrect email or password.' };
+  };
+
+  // Registration updates both login credentials and profile structure.
+  // This keeps data format aligned with what Profile page displays.
+  const handleRegister = (registrationData) => {
+    if (Object.values(registrationData).some((value) => !String(value).trim())) {
+      return { ok: false, message: 'Please fill all fields.' };
+    }
+
+    setTutor((prev) => ({
+      ...prev,
+      name: registrationData.fullName,
+      email: registrationData.email,
+      phone: registrationData.phone,
+      staffId: registrationData.staffId,
+      faculty: registrationData.faculty,
+      office: registrationData.officeBuilding,
+    }));
+    setAuthCredentials({
+      email: registrationData.email,
+      password: registrationData.password,
+    });
+    setIsAuthenticated(true);
+    setAuthMode('login');
+    return { ok: true };
+  };
+
+  const handleLogout = (event) => {
+    event.preventDefault();
+    setIsAuthenticated(false);
+    setAuthMode('login');
+  };
+
+  if (!isAuthenticated) {
+    if (authMode === 'register') {
+      return (
+        <RegisterPage
+          onRegister={handleRegister}
+          onBackToLogin={() => setAuthMode('login')}
+        />
+      );
+    }
+    return <LoginPage onLogin={handleLogin} onOpenSignUp={() => setAuthMode('register')} />;
+  }
+
   return (
     <div className="app-shell">
       <header className="top-bar">
@@ -120,7 +194,7 @@ function App() {
           <h1 className="app-title">Automatic Student Attendance</h1>
           <div className="profile-picture-wrapper">
             <img
-              src="/assets/profile-picture.png"
+              src={profilePhotoUrl}
               alt="Profile"
               className="profile-picture"
             />
@@ -179,7 +253,13 @@ function App() {
               <span className="nav-label">Analytics</span>
             </a>
 
-            <a className="nav-item nav-item-profile" href="#">
+            <a
+              href="#profile"
+              className={`nav-item nav-item-profile${
+                page === 'profile' ? ' is-active' : ''
+              }`}
+              onClick={handleNavClick('profile')}
+            >
               <img src="/assets/icon-profile.svg" alt="" className="nav-icon" />
               <span className="nav-label">Profile</span>
             </a>
@@ -201,7 +281,7 @@ function App() {
 
             <div className="nav-spacer" />
 
-            <a className="nav-item nav-item-logout" href="#">
+            <a className="nav-item nav-item-logout" href="#logout" onClick={handleLogout}>
               <img src="/assets/icon-logout.svg" alt="" className="nav-icon" />
               <span className="nav-label">Log out</span>
             </a>
@@ -212,6 +292,7 @@ function App() {
         {page === 'dashboard' && (
           <DashboardPage
             classes={classes}
+            tutorName={tutor.name}
             onAssignClass={handleAssignClass}
             onRemoveClass={handleRemoveClass}
           />
@@ -226,6 +307,13 @@ function App() {
           />
         )}
         {page === 'analytics' && <AnalyticsPage classes={classes} students={students} />}
+        {page === 'profile' && (
+          <ProfilePage
+            tutor={tutor}
+            photoUrl={profilePhotoUrl}
+            onPhotoChange={handleProfilePhotoChange}
+          />
+        )}
         {page === 'support' && <SupportPage />}
       </div>
     </div>

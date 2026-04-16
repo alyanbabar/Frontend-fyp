@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
+function DashboardPage({ classes, tutorName, onAssignClass, onRemoveClass }) {
   const today = new Date();
   // Year/month are tracked separately so the calendar can move across years.
   const [year, setYear] = useState(today.getFullYear());
@@ -64,6 +64,9 @@ function DashboardPage({ classes, onAssignClass, onRemoveClass }) {
       >
         <section className="dashboard-header">
           <h2 className="dashboard-title">Dashboard</h2>
+          <p className="dashboard-user">
+            Welcome, <span>{tutorName}</span>
+          </p>
           <p className="dashboard-subtitle">
             Overview of attendance, classes, and recent activity.
           </p>

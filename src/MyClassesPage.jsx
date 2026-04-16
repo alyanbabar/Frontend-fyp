@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { UNIVERSITY_WEEK1_START } from './data';
+import { TERM_TOTAL_WEEKS, UNIVERSITY_WEEK1_START } from './data';
 
 function MyClassesPage({ classes }) {
   // Track which class is selected in the dropdown.
@@ -54,8 +54,8 @@ function MyClassesPage({ classes }) {
     const diffWeeks = Math.floor(diffMs / weekMs);
     const rawWeek = diffWeeks + 1; // Week 1 during the first 7 days, Week 2 in the next 7, etc.
 
-    // Counter goes up to Week 13 and then stays there.
-    return rawWeek > 13 ? 13 : rawWeek;
+    // Counter goes up to configured term week and then stays there.
+    return rawWeek > TERM_TOTAL_WEEKS ? TERM_TOTAL_WEEKS : rawWeek;
   };
 
   const teachingWeek = computeTeachingWeek();
